@@ -1,0 +1,18 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.toolbar {
+  background-color: rgb(62, 62, 62);
+  color:  #ffc700;
+}

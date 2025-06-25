@@ -1,0 +1,105 @@
+<div class="movie-details-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Movie Details</h2>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p>Loading movie details...</p>
+  </div>
+
+  <div class="movie-content" *ngIf="!loading && movie">
+    <div class="movie-header">
+      <div class="poster-section">
+        <img 
+          [src]="getImageUrl(movie.poster_path)" 
+          [alt]="movie.title"
+          class="movie-poster"
+          (error)="onImageError($event)">
+      </div>
+      
+      <div class="info-section">
+        <h1 class="movie-title">{{ movie.title }}</h1>
+        
+        <div class="rating-section">
+          <div class="vote-average">
+            <mat-icon>star</mat-icon>
+            <span class="rating">{{ movie.vote_average.toFixed(1) }}</span>
+            <span class="vote-count">({{ movie.vote_count }} votes)</span>
+          </div>
+        </div>
+
+        <div class="overview">
+          <h3>Overview</h3>
+          <p>{{ movie.overview || 'No overview available.' }}</p>
+        </div>
+
+        <div class="rating-form" *ngIf="!ratingSubmitted">
+          <h3>Rate this movie</h3>
+          <div class="star-rating">
+            <button 
+              *ngFor="let star of [1,2,3,4,5,6,7,8,9,10]" 
+              mat-icon-button
+              [class.selected]="star <= rating"
+              (click)="onRatingChange(star)">
+              <mat-icon>{{ star <= rating ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+            <span class="rating-text">{{ rating }}/10</span>
+          </div>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            [disabled]="rating === 0 || !sessionId"
+            (click)="submitRating()">
+            Submit Rating
+          </button>
+        </div>
+
+        <div class="rating-submitted" *ngIf="ratingSubmitted">
+          <mat-icon>check_circle</mat-icon>
+          <span>Rating submitted successfully!</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="movie-details">
+      <mat-grid-list cols="2" rowHeight="60px" gutterSize="16px">
+        <mat-grid-tile>
+          <div class="detail-item">
+            <span class="label">Release Date:</span>
+            <span class="value">{{ formatDate(movie.release_date) }}</span>
+          </div>
+        </mat-grid-tile>
+        
+        <mat-grid-tile>
+          <div class="detail-item">
+            <span class="label">Budget:</span>
+            <span class="value">{{ formatCurrency(movie.budget) }}</span>
+          </div>
+        </mat-grid-tile>
+        
+        <mat-grid-tile>
+          <div class="detail-item">
+            <span class="label">Revenue:</span>
+            <span class="value">{{ formatCurrency(movie.revenue) }}</span>
+          </div>
+        </mat-grid-tile>
+        
+        <mat-grid-tile>
+          <div class="detail-item">
+            <span class="label">Languages:</span>
+            <span class="value">{{ getSpokenLanguages() }}</span>
+          </div>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </div>
+
+  <div class="error-container" *ngIf="!loading && !movie">
+    <mat-icon>error</mat-icon>
+    <p>Failed to load movie details</p>
+  </div>
+</div> 

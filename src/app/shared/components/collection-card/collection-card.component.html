@@ -1,0 +1,55 @@
+<mat-card class="collection-card" (click)="onCollectionClick()">
+  <mat-card-header>
+    <mat-card-title>{{ collection.title }}</mat-card-title>
+    <mat-card-subtitle>
+      Created {{ getFormattedDate(collection.createdDate) }}
+    </mat-card-subtitle>
+    
+    <div class="action-buttons" *ngIf="showActions">
+      <button 
+        mat-icon-button 
+        color="primary" 
+        matTooltip="Edit collection" 
+        (click)="onEditCollection($event)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button 
+        mat-icon-button 
+        color="warn" 
+        (click)="onDeleteCollection($event)" 
+        matTooltip="Delete collection">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content>
+    <p class="description">{{ collection.description }}</p>
+
+    <div class="collection-stats">
+      <div class="stat-item">
+        <mat-icon>movie</mat-icon>
+        <span>{{ getTotalMovies() }} movies</span>
+      </div>
+    </div>
+
+    <div class="movie-previews" *ngIf="collection.movies.length > 0">
+      <div 
+        *ngFor="let movie of getMoviePreviews()" 
+        class="movie-preview">
+        <img
+          [src]="movie.poster_path ? 'https://image.tmdb.org/t/p/w92' + movie.poster_path : 'assets/no-poster.jpg'"
+          [alt]="movie.title" 
+          (error)="onImageError($event)">
+      </div>
+      <div class="more-movies" *ngIf="getMoreMoviesCount() > 0">
+        <span>+{{ getMoreMoviesCount() }} more</span>
+      </div>
+    </div>
+
+    <div class="empty-collection" *ngIf="collection.movies.length === 0">
+      <mat-icon>movie_off</mat-icon>
+      <span>No movies yet</span>
+    </div>
+  </mat-card-content>
+</mat-card> 
