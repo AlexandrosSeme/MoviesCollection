@@ -1,7 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CollectionService } from '../../services/collection.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
+import { CreateCollectionDialogData } from '../../models/collections.model';
 
 @Component({
   selector: 'app-create-collection-dialog',
@@ -17,10 +18,10 @@ export class CreateCollectionDialogComponent {
   constructor(
     private dialogRef: MatDialogRef<CreateCollectionDialogComponent>,
     private collectionService: CollectionService,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: CreateCollectionDialogData,
+    private alerts: AlertsService
   ) {
-    if (data && data.isEditing && data.collection) {
+    if (data?.isEditing && data?.collection) {
       this.isEditing = true;
       this.title = data.collection.title;
       this.description = data.collection.description;
@@ -28,27 +29,36 @@ export class CreateCollectionDialogComponent {
     }
   }
 
-  onSubmit(): void {
-    if (this.isFormValid()) {
-      if (this.isEditing) {
-        this.collectionService.updateCollection(this.collectionId, this.title, this.description);
-        this.snackBar.open('Collection updated successfully!', 'Close', { duration: 3000 });
-        this.dialogRef.close({ title: this.title, description: this.description });
-      } else {
-        const newCollection = this.collectionService.createCollection(this.title, this.description);
-        this.snackBar.open('Collection created successfully!', 'Close', { duration: 3000 });
-        this.dialogRef.close(newCollection);
-      }
+
+  onSubmit() {
+    if (this.isEditing) {
+      this.collectionService.updateCollection(this.collectionId, this.title, this.description)
+        .subscribe({
+          next: () => {
+            this.alerts.success('Collection updated successfully!');
+            this.dialogRef.close({ title: this.title, description: this.description });
+          },
+          error: (error) => {
+            console.error('Error updating collection:', error);
+            this.alerts.error('Failed to update collection');
+          }
+        });
     } else {
-      this.snackBar.open('Please fill all fields correctly', 'Close', { duration: 3000 });
+      this.collectionService.createCollection(this.title, this.description)
+        .subscribe({
+          next: (newCollection) => {
+            this.alerts.success('Collection created successfully!');
+            this.dialogRef.close(newCollection);
+          },
+          error: (error) => {
+            console.error('Error creating collection:', error);
+            this.alerts.error('Failed to create collection');
+          }
+        });
     }
   }
 
-  isFormValid(): boolean {
-    return this.title.length >= 3 && this.description.length >= 10;
-  }
-
-  onCancel(): void {
+  onCancel() {
     this.dialogRef.close();
   }
 } 

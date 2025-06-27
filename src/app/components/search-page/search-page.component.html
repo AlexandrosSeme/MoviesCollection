@@ -1,92 +1,69 @@
 <div class="search-container">
   <div class="search-header">
     <h1>Movie Search</h1>
-    <p class="subtitle" *ngIf="!searchTerm">Popular movies are shown below. Search for specific movies above.</p>
+    
     <div class="search-form">
       <mat-form-field appearance="outline" class="search-input">
         <mat-label>Search for movies</mat-label>
-        <input 
-          matInput 
-          [(ngModel)]="searchTerm"
-          appSearchValidation
-          placeholder="Enter at least 3 characters...">
-        <mat-error *ngIf="searchTerm && searchTerm.length < 3">
-          Minimum 3 characters required
-        </mat-error>
+        <input matInput [(ngModel)]="searchTerm" appSearchValidation [minLength]="3"
+        (validationChange)="isSearchValid = $event" placeholder="Enter at least 3 characters...">
       </mat-form-field>
-      <button 
-        mat-raised-button 
-        color="warn" 
-        (click)="onSearch()" 
-        [disabled]="!searchTerm || searchTerm.length < 3 || loading">
+      <button mat-raised-button color="primary" (click)="onSearch()">
         <mat-icon>search</mat-icon>
-        Search
+        {{ isSearching ? 'Searching...' : 'Search' }}
       </button>
-      <button 
-        mat-stroked-button 
-        color="warn" 
-        (click)="clearSearch()" 
-        [disabled]="!searchTerm || loading">
+      <button mat-raised-button color="secondary" (click)="clearSearch()" [disabled]="!searchTerm || loading">
         <mat-icon>clear</mat-icon>
         Clear
       </button>
     </div>
+    <p class="subtitse" *ngIf="!searchTerm">Popular movies are shown below. Search for specific movies above.</p>
+    <div class="validation-messages" *ngIf="searchTerm && hasSearched">
+      <div class="error-message" *ngIf="searchTerm.length < 3">
+        Minimum 3 characters required
+      </div>
+      <div class="error-message" *ngIf="searchTerm.length >= 3 && !isSearchValid">
+        Only letters, numbers and spaces are allowed
+      </div>
+    </div>
   </div>
-
   <div class="actions-bar" *ngIf="selectedMovies.length > 0">
     <span class="selected-count">{{ selectedMovies.length }} movie(s) selected</span>
-    <button 
-      mat-raised-button 
-      color="warn" 
-      (click)="openAddToCollectionDialog()">
+    <button mat-raised-button color="primary" (click)="openAddToCollectionDialog()">
       <mat-icon>add</mat-icon>
       Add to Collection
     </button>
   </div>
-
-  <app-loading-spinner 
-    *ngIf="loading" 
-    message="Searching movies..."
-    size="large">
+  <app-loading-spinner *ngIf="loading" message="Searching movies..." size="large">
   </app-loading-spinner>
-
   <div class="movies-grid" *ngIf="!loading && movies.length > 0">
-    <app-movie-card
-      *ngFor="let movie of movies"
-      [movie]="movie"
-
-      (movieClick)="openMovieDetails($event)"
-      (movieSelect)="toggleMovieSelection($event)"
+    <app-movie-card *ngFor="let movie of movies" [movie]="movie" [isSelected]="isMovieSelected(movie)"
+      [showSelection]="true" (movieClick)="openMovieDetails($event)" (movieSelect)="toggleMovieSelection($event)"
       (addToCollection)="openAddToCollectionDialog()">
     </app-movie-card>
   </div>
-
+  <div class="no-search-state" *ngIf="!loading && movies.length === 0 && !searchTerm">
+    <mat-icon>search</mat-icon>
+    <p>Enter a keyword above to search for movies</p>
+  </div>
   <div class="no-results" *ngIf="!loading && movies.length === 0 && searchTerm">
     <mat-icon>search_off</mat-icon>
     <p>No movies found for "{{ searchTerm }}"</p>
   </div>
-
-  <div class="pagination-container" *ngIf="totalPages > 1">
+  <div class="pagination-container">
     <div class="pagination-controls">
-      <button 
-        mat-button 
-        [disabled]="currentPage === 1"
-        (click)="onPageChange(currentPage - 1)">
+      <button mat-button [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
         <mat-icon>chevron_left</mat-icon>
         Previous
       </button>
-      
       <span class="page-info">
         Page {{ currentPage }} of {{ totalPages }}
       </span>
-      
-      <button 
-        mat-button 
-        [disabled]="currentPage >= 3 || currentPage === totalPages"
+      <button mat-button [disabled]="currentPage >= 3 || currentPage === totalPages"
         (click)="onPageChange(currentPage + 1)">
         Next
         <mat-icon>chevron_right</mat-icon>
       </button>
     </div>
   </div>
-</div> 
+</div>

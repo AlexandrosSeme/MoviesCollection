@@ -7,18 +7,12 @@
     </button>
   </div>
 
-  <app-loading-spinner 
-    *ngIf="loading" 
-    message="Loading collections..."
-    size="large">
+  <app-loading-spinner *ngIf="loading" message="Loading collections..." size="large">
   </app-loading-spinner>
 
   <div class="collections-grid" *ngIf="!loading && collections.length > 0">
-    <app-collection-card
-      *ngFor="let collection of collections"
-      [collection]="collection"
-      (collectionClick)="openCollection($event)"
-      (editCollection)="editCollection($event)"
+    <app-collection-card *ngFor="let collection of collections" [collection]="collection"
+      (collectionClick)="openCollection($event)" (editCollection)="editCollection($event)"
       (deleteCollection)="deleteCollection($event)">
     </app-collection-card>
   </div>
@@ -27,9 +21,5 @@
     <mat-icon>collections</mat-icon>
     <h2>No Collections Yet</h2>
     <p>Create your first movie collection to get started!</p>
-    <button mat-raised-button color="primary" (click)="createCollection()">
-      <mat-icon>add</mat-icon>
-      Create Your First Collection
-    </button>
   </div>
 </div>

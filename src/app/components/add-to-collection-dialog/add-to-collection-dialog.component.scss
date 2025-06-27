@@ -17,6 +17,12 @@
   }
 }
 
+.movie-titles {
+  font-size: small;
+  font-weight: 600;
+  color: #8b8b8b;
+}
+
 .movies-info {
   display: flex;
   align-items: center;
@@ -72,7 +78,6 @@ mat-dialog-actions {
   gap: 10px;
 }
 
-// Responsive design
 @media (max-width: 480px) {
   .add-to-collection-dialog {
     min-width: 100vw;

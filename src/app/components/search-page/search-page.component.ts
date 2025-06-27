@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { MovieService } from '../../services/movie.service';
-import { UserPreferencesService } from '../../services/user-preferences.service';
-import { UiService } from '../../shared/services/ui.service';
 import { Movie } from '../../models/movie.model';
 import { AddToCollectionDialogComponent } from '../add-to-collection-dialog/add-to-collection-dialog.component';
+import { MovieDetailsComponent } from '../movie-details/movie-details.component';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
 
 @Component({
   selector: 'app-search-page',
@@ -21,27 +21,29 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   currentPage = 1;
   totalPages = 0;
   loading = false;
-  searchHistory: string[] = [];
+  isSearchValid: boolean = false;
+  hasSearched: boolean = false;
+  isSearching: boolean = false;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private movieService: MovieService,
-    private userPreferencesService: UserPreferencesService,
-    private uiService: UiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private alerts: AlertsService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadPopularMovies();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  loadPopularMovies(): void {
+  loadPopularMovies() {
+    if (this.loading) return;    
     this.loading = true;
     this.movieService.getPopularMovies(1)
       .pipe(takeUntil(this.destroy$))
@@ -50,95 +52,69 @@ export class SearchPageComponent implements OnInit, OnDestroy {
           this.loading = false;
           if (response && response.results) {
             this.movies = response.results;
-            this.currentPage = 1;
-            this.totalPages = 3;
+            this.currentPage = response.page;
+            this.totalPages = Math.min(response.total_pages, 3);
           }
         },
         error: (error) => {
           this.loading = false;
           console.error('Error loading popular movies:', error);
-          this.uiService.showError('Error loading movies');
         }
       });
   }
 
-  onSearch(searchTerm?: string, page?: number): void {
+  onSearch(searchTerm?: string, page?: number) {
+    if (this.isSearching) {
+      return;
+    }
+    const termToSearch = searchTerm || this.searchTerm;
+    this.hasSearched = true;
+    if (!this.isSearchValid) {
+      return;
+    }
+    this.isSearching = true;
     this.loading = true;
     const searchPage = page || 1;
-    const termToSearch = searchTerm || this.searchTerm;
-    this.userPreferencesService.setLastSearchTerm(termToSearch);
+    
     this.movieService.searchMovies(termToSearch, searchPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
+        next: (response) => {
           this.loading = false;
+          this.isSearching = false;
           if (response && response.results) {
             this.movies = response.results;
             this.currentPage = response.page;
-            this.totalPages = 3;
-
-            this.userPreferencesService.addToSearchHistory(termToSearch, response.total_results);
-            this.searchHistory = this.userPreferencesService.getPreferences().searchHistory;
+            this.totalPages = Math.min(response.total_pages, 3);
           }
         },
         error: (error) => {
           this.loading = false;
+          this.isSearching = false;
           console.error('Search error:', error);
-          this.uiService.showError('Error searching movies');
+          this.alerts.error('Error searching movies');
         }
       });
   }
 
-  onPageChange(page: number): void {
+  onPageChange(page: number) {
     if (page > 3) return;
-
-    if (this.searchTerm) {
+    if (this.searchTerm && this.searchTerm.trim().length > 0) {
       this.onSearch(this.searchTerm, page);
     } else {
-      this.loading = true;
-      this.movieService.getPopularMovies(page)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            this.loading = false;
-            this.movies = response.results;
-            this.currentPage = response.page;
-            this.totalPages = 3;
-          },
-          error: (error) => {
-            this.loading = false;
-            console.error('Page change error:', error);
-            this.uiService.showError('Error loading page');
-          }
-        });
+      this.loadPopularMovies();
     }
   }
 
-  onSearchFromHistory(term: string): void {
-    this.searchTerm = term;
-    this.onSearch(term, 1);
-  }
-
-  clearSearch(): void {
+  clearSearch() {
     this.searchTerm = '';
     this.selectedMovies = [];
+    this.hasSearched = false;
+    this.isSearching = false;
     this.loadPopularMovies();
-    this.userPreferencesService.setLastSearchTerm('');
   }
 
-  clearSearchHistory(): void {
-    this.userPreferencesService.clearSearchHistory();
-    this.searchHistory = [];
-    this.uiService.showInfo('Search history cleared');
-  }
-
-  removeFromSearchHistory(term: string): void {
-    this.userPreferencesService.removeFromSearchHistory(term);
-    this.searchHistory = this.userPreferencesService.getPreferences().searchHistory;
-    this.uiService.showInfo('Removed from search history');
-  }
-
-  toggleMovieSelection(movie: Movie): void {
+  toggleMovieSelection(movie: Movie) {
     const index = this.selectedMovies.findIndex(m => m.id === movie.id);
     if (index > -1) {
       this.selectedMovies.splice(index, 1);
@@ -151,18 +127,16 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     return this.selectedMovies.some(m => m.id === movie.id);
   }
 
-  openAddToCollectionDialog(): void {
+  openAddToCollectionDialog() {
     if (this.selectedMovies.length === 0) {
-      this.uiService.showWarning('Please select movies first');
+      this.alerts.info('Please select movies first');
       return;
     }
-
     const dialogRef = this.dialog.open(AddToCollectionDialogComponent, {
       width: '500px',
       data: { movies: this.selectedMovies },
       disableClose: true
     });
-
     dialogRef.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe(result => {
@@ -172,7 +146,13 @@ export class SearchPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  openMovieDetails(movie: Movie): void {
-    console.log('Opening movie details for:', movie.title);
+  openMovieDetails(movie: Movie) {
+    const dialogRef = this.dialog.open(MovieDetailsComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: { movieId: movie.id },
+      disableClose: false
+    });
   }
 } 

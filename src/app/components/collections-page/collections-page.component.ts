@@ -6,9 +6,9 @@ import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { CollectionService } from '../../services/collection.service';
-import { UiService } from '../../shared/services/ui.service';
 import { MovieCollection } from '../../models/movie.model';
 import { CreateCollectionDialogComponent } from '../create-collection-dialog/create-collection-dialog.component';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
 
 @Component({
   selector: 'app-collections-page',
@@ -18,31 +18,30 @@ import { CreateCollectionDialogComponent } from '../create-collection-dialog/cre
 export class CollectionsPageComponent implements OnInit, OnDestroy {
   collections: MovieCollection[] = [];
   loading = false;
-  
+
   private destroy$ = new Subject<void>();
   private collectionsSubscription: Subscription | null = null;
 
   constructor(
     private collectionService: CollectionService,
-    private uiService: UiService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private alerts: AlertsService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadCollections();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    
     if (this.collectionsSubscription) {
       this.collectionsSubscription.unsubscribe();
     }
   }
 
-  private loadCollections(): void {
+  private loadCollections() {
     this.loading = true;
     this.collectionsSubscription = this.collectionService.collections$
       .pipe(takeUntil(this.destroy$))
@@ -53,32 +52,25 @@ export class CollectionsPageComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading collections:', error);
-          this.uiService.showError('Failed to load collections');
+          this.alerts.error('Failed to load collections');
           this.loading = false;
         }
       });
   }
 
-  createCollection(): void {
+  createCollection() {
     const dialogRef = this.dialog.open(CreateCollectionDialogComponent, {
       width: '500px',
+      data: {},
       disableClose: true
     });
-
-    dialogRef.afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(result => {
-        if (result) {
-          this.uiService.showSuccess('Collection created successfully!');
-        }
-      });
   }
 
-  openCollection(collection: MovieCollection): void {
+  openCollection(collection: MovieCollection) {
     this.router.navigate(['/collections', collection.id]);
   }
 
-  editCollection(collection: MovieCollection): void {
+  editCollection(collection: MovieCollection) {
     const dialogRef = this.dialog.open(CreateCollectionDialogComponent, {
       width: '500px',
       data: {
@@ -91,30 +83,22 @@ export class CollectionsPageComponent implements OnInit, OnDestroy {
       },
       disableClose: true
     });
-
-    dialogRef.afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(result => {
-        if (result) {
-          this.uiService.showSuccess('Collection updated successfully!');
-        }
-      });
   }
 
-  deleteCollection(collection: MovieCollection): void {
-    const confirmationData = {
-      title: 'Delete Collection',
-      message: `Are you sure you want to delete "${collection.title}"? This action cannot be undone.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel'
-    };
-
-    this.uiService.confirm(confirmationData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(confirmed => {
+  deleteCollection(collection: MovieCollection) {
+    this.alerts.confirm(`Are you sure you want to delete "${collection.title}"? This action cannot be undone.`, 'Delete Collection')
+      .then(confirmed => {
         if (confirmed) {
-          this.collectionService.deleteCollection(collection.id);
-          this.uiService.showSuccess('Collection deleted successfully');
+          this.collectionService.deleteCollection(collection.id)
+            .subscribe({
+              next: () => {
+                this.alerts.success('Collection deleted successfully');
+              },
+              error: (error) => {
+                console.error('Error deleting collection:', error);
+                this.alerts.error('Failed to delete collection');
+              }
+            });
         }
       });
   }

@@ -1,0 +1,194 @@
+$primary-button-bg: #ffc700;
+$primary-button-color: #333;
+$primary-button-hover: #e6b300;
+$primary-button-active: #d4a000;
+
+$secondary-button-bg: #939393;
+$secondary-button-color: #ffffff;
+$secondary-button-hover: #808080;
+$secondary-button-active: #6b6b6b;
+
+$warning-button-bg: #a9a8a805;
+$warning-button-color: #fb4d4d ;
+$warning-button-hover: #a9a8a894;
+$warning-button-active: #ff1818;
+
+$disabled-button-bg: #cccccc;
+$disabled-button-color: #666666;
+
+@mixin primary-button {
+  background-color: $primary-button-bg !important;
+  color: $primary-button-color !important;
+  
+  &:hover {
+    background-color: $primary-button-hover !important;
+    color: $primary-button-color !important;
+  }
+  
+  &:focus {
+    background-color: $primary-button-bg !important;
+    color: $primary-button-color !important;
+  }
+  
+  &:active {
+    background-color: $primary-button-active !important;
+    color: $primary-button-color !important;
+  }
+  
+  &:disabled {
+    background-color: $disabled-button-bg !important;
+    color: $disabled-button-color !important;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid $primary-button-bg !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@mixin secondary-button {
+  background-color: $secondary-button-bg !important;
+  color: $secondary-button-color !important;
+  border-color: $secondary-button-bg !important;
+  
+  &:hover {
+    background-color: $secondary-button-hover !important;
+    color: $secondary-button-color !important;
+    border-color: $secondary-button-hover !important;
+  }
+  
+  &:focus {
+    background-color: $secondary-button-bg !important;
+    color: $secondary-button-color !important;
+    border-color: $secondary-button-bg !important;
+  }
+  
+  &:active {
+    background-color: $secondary-button-active !important;
+    color: $secondary-button-color !important;
+    border-color: $secondary-button-active !important;
+  }
+  
+  &:disabled {
+    background-color: $disabled-button-bg !important;
+    color: $disabled-button-color !important;
+    border-color: $disabled-button-bg !important;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid $primary-button-bg !important;
+    outline-offset: 2px !important;
+  }
+}
+
+
+.mat-mdc-raised-button.mat-primary {
+  @include primary-button;
+}
+
+.mat-mdc-stroked-button.mat-primary,
+.mat-mdc-button.mat-primary,
+.mat-mdc-stroked-button.mat-warn,
+.mat-mdc-button.mat-warn {
+  @include secondary-button;
+}
+
+.mat-mdc-icon-button.mat-primary {
+  color: $primary-button-bg !important;
+  
+  &:hover {
+    color: $primary-button-hover !important;
+  }
+}
+
+.mat-mdc-icon-button.mat-warn, .btn-warn {
+  background-color: $warning-button-bg !important;
+  color: $warning-button-color !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background-color: $warning-button-hover !important;
+    color: $warning-button-color !important;
+  }
+  &:focus {
+    background-color: $warning-button-bg !important;
+    color: $warning-button-color !important;
+  }
+  &:active {
+    background-color: $warning-button-active !important;
+    color: $warning-button-color !important;
+  }
+  &:disabled {
+    background-color: $disabled-button-bg !important;
+    color: $disabled-button-color !important;
+  }
+  &:focus-visible {
+    outline: 2px solid $warning-button-bg !important;
+    outline-offset: 2px !important;
+  }
+}
+
+.btn-primary {
+  @include primary-button;
+}
+
+.btn-secondary {
+  @include secondary-button;
+}
+
+.action-button {
+  @include primary-button;
+  border-radius: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cancel-button {
+  @include secondary-button;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.mat-mdc-raised-button.mat-secondary {
+  background-color: #939393 !important;
+  color: #ffffff !important;
+  
+  &:hover {
+    background-color: #808080 !important;
+    color: #ffffff !important;
+  }
+  &:focus {
+    background-color: #939393 !important;
+    color: #ffffff !important;
+  }
+  &:active {
+    background-color: #6b6b6b !important;
+    color: #ffffff !important;
+  }
+  &:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+  }
+  &:focus-visible {
+    outline: 2px solid #939393 !important;
+    outline-offset: 2px !important;
+  }
+}
+
+
+.swal-confirm-btn {
+  background-color: #ffc700 !important;
+  color: #333 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.swal-cancel-btn {
+  background-color: #939393 !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-left: 8px;
+} 

@@ -1,14 +1,19 @@
 <mat-toolbar class="toolbar">
-  <span>Movie Collections</span>
+  <div class="toolbar-title" routerLink="/">
+    <img src="assets/movieLogo.png" alt="Logo" class="app-logo" />
+    <span>Movie Collections</span>
+  </div>
   <span class="spacer"></span>
-  <button mat-button routerLink="/" routerLinkActive="active">
-    <mat-icon>search</mat-icon>
-    Search
-  </button>
-  <button mat-button routerLink="/collections" routerLinkActive="active">
-    <mat-icon>collections</mat-icon>
-    Collections
-  </button>
+  <div class="toolbar-content">
+    <button mat-button routerLink="/" routerLinkActive="active">
+      <mat-icon>search</mat-icon>
+      Search
+    </button>
+    |
+    <button mat-button routerLink="/collections" routerLinkActive="active">
+      <mat-icon>collections</mat-icon>
+      Collections
+    </button>
+  </div>
 </mat-toolbar>
-
 <router-outlet></router-outlet>

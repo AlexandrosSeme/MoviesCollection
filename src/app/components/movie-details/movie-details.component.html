@@ -14,13 +14,9 @@
   <div class="movie-content" *ngIf="!loading && movie">
     <div class="movie-header">
       <div class="poster-section">
-        <img 
-          [src]="getImageUrl(movie.poster_path)" 
-          [alt]="movie.title"
-          class="movie-poster"
-          (error)="onImageError($event)">
+        <img [src]="imageService.getPosterUrlSync(movie.poster_path)" [alt]="movie.title" class="movie-poster" appImageError>
       </div>
-      
+
       <div class="info-section">
         <h1 class="movie-title">{{ movie.title }}</h1>
         
@@ -41,7 +37,7 @@
           <h3>Rate this movie</h3>
           <div class="star-rating">
             <button 
-              *ngFor="let star of [1,2,3,4,5,6,7,8,9,10]" 
+              *ngFor="let star of ratingStars" 
               mat-icon-button
               [class.selected]="star <= rating"
               (click)="onRatingChange(star)">
@@ -70,28 +66,25 @@
         <mat-grid-tile>
           <div class="detail-item">
             <span class="label">Release Date:</span>
-            <span class="value">{{ formatDate(movie.release_date) }}</span>
+            <span class="value">{{ movie.release_date | dateFormat:'long' }}</span>
           </div>
         </mat-grid-tile>
-        
         <mat-grid-tile>
           <div class="detail-item">
             <span class="label">Budget:</span>
-            <span class="value">{{ formatCurrency(movie.budget) }}</span>
+            <span class="value">{{ movie.budget | currencyFormat }}</span>
           </div>
         </mat-grid-tile>
-        
         <mat-grid-tile>
           <div class="detail-item">
             <span class="label">Revenue:</span>
-            <span class="value">{{ formatCurrency(movie.revenue) }}</span>
+            <span class="value">{{ movie.revenue | currencyFormat }}</span>
           </div>
         </mat-grid-tile>
-        
         <mat-grid-tile>
           <div class="detail-item">
             <span class="label">Languages:</span>
-            <span class="value">{{ getSpokenLanguages() }}</span>
+            <span class="value">{{ movie.spoken_languages | joinByProperty:'name' }}</span>
           </div>
         </mat-grid-tile>
       </mat-grid-list>

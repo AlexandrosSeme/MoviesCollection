@@ -6,23 +6,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-// Shared Components
 import { MovieCardComponent } from './components/movie-card/movie-card.component';
 import { CollectionCardComponent } from './components/collection-card/collection-card.component';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
 
-// Shared Pipes
 import { DateFormatPipe } from './pipes/date-format.pipe';
-import { TruncatePipe } from './pipes/truncate.pipe';
-
-// Shared Directives
+import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
+import { JoinByPropertyPipe, ArrayLengthPipe } from './pipes/array-to-string.pipe';
 import { SearchValidationDirective } from './directives/search-validation.directive';
-
-// Shared Services
-import { UiService } from './services/ui.service';
-
-// Shared Constants
-export * from './constants/app.constants';
+import { ImageErrorDirective } from './directives/image-error.directive';
 
 const SHARED_COMPONENTS = [
   MovieCardComponent,
@@ -32,15 +24,14 @@ const SHARED_COMPONENTS = [
 
 const SHARED_PIPES = [
   DateFormatPipe,
-  TruncatePipe
+  CurrencyFormatPipe,
+  JoinByPropertyPipe,
+  ArrayLengthPipe
 ];
 
 const SHARED_DIRECTIVES = [
-  SearchValidationDirective
-];
-
-const SHARED_SERVICES = [
-  UiService
+  SearchValidationDirective,
+  ImageErrorDirective
 ];
 
 @NgModule({
@@ -66,10 +57,9 @@ const SHARED_SERVICES = [
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
-  ],
-  providers: [
-    ...SHARED_SERVICES
+    MatTooltipModule,
+    JoinByPropertyPipe,
+    ArrayLengthPipe
   ]
 })
 export class SharedModule { } 

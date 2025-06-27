@@ -44,8 +44,8 @@
     flex-shrink: 0;
 
     .movie-poster {
-      width: 200px;
-      height: 300px;
+      width: 150px;
+      height: 225px;
       object-fit: cover;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -58,7 +58,7 @@
 
     .movie-title {
       margin: 0 0 15px 0;
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 500;
       color: #333;
       line-height: 1.2;
@@ -156,7 +156,6 @@
 .movie-details {
   .detail-item {
     display: flex;
-    flex-direction: column;
     gap: 5px;
 
     .label {
@@ -193,7 +192,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .movie-header {
     flex-direction: column;
@@ -203,8 +201,8 @@
       text-align: center;
 
       .movie-poster {
-        width: 150px;
-        height: 225px;
+        width: 120px;
+        height: 180px;
       }
     }
 
@@ -212,12 +210,6 @@
       .movie-title {
         font-size: 1.5rem;
       }
-    }
-  }
-
-  .movie-details {
-    mat-grid-list {
-      cols: 1;
     }
   }
 }
@@ -233,5 +225,14 @@
 
   .movie-content {
     padding: 0 16px 16px;
+  }
+
+  .movie-header {
+    .poster-section {
+      .movie-poster {
+        width: 100px;
+        height: 150px;
+      }
+    }
   }
 } 

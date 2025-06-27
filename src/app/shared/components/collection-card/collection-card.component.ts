@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MovieCollection } from '../../../models/movie.model';
+import { ImageService } from '../../../services/image.service';
 
 @Component({
   selector: 'app-collection-card',
@@ -13,6 +14,8 @@ export class CollectionCardComponent {
   @Output() collectionClick = new EventEmitter<MovieCollection>();
   @Output() editCollection = new EventEmitter<MovieCollection>();
   @Output() deleteCollection = new EventEmitter<MovieCollection>();
+
+  constructor(public imageService: ImageService) {}
 
   onCollectionClick(): void {
     this.collectionClick.emit(this.collection);
@@ -28,24 +31,11 @@ export class CollectionCardComponent {
     this.deleteCollection.emit(this.collection);
   }
 
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/no-poster.jpg';
-  }
-
-  getFormattedDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
   getTotalMovies(): number {
     return this.collection.movies.length;
   }
 
-  getMoviePreviews(): any[] {
+  getMoviePreviews(): MovieCollection['movies'] {
     return this.collection.movies.slice(0, 3);
   }
 

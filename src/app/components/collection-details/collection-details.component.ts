@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CollectionService } from '../../services/collection.service';
 import { MovieCollection, Movie } from '../../models/movie.model';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MovieDetailsComponent } from '../movie-details/movie-details.component';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
 
 @Component({
   selector: 'app-collection-details',
@@ -15,19 +15,23 @@ export class CollectionDetailsComponent implements OnInit {
   collection: MovieCollection | null = null;
   loading = true;
 
+  get moviesAsMovieType(): Movie[] {
+    return (this.collection?.movies ?? []) as unknown as Movie[];
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private collectionService: CollectionService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private alerts: AlertsService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadCollection();
   }
 
-  private loadCollection(): void {
+  private loadCollection() {
     const collectionId = this.route.snapshot.paramMap.get('id');
     if (collectionId) {
       this.collectionService.getCollectionById$(collectionId).subscribe({
@@ -35,9 +39,10 @@ export class CollectionDetailsComponent implements OnInit {
           this.collection = collection;
           this.loading = false;
         },
-        error: (error: any) => {
+        error: (error: Error) => {
           console.error('Error loading collection:', error);
-          this.snackBar.open('Collection not found', 'Close', { duration: 3000 });
+          this.alerts.error('Failed to load collection');
+          this.loading = false;
           this.router.navigate(['/collections']);
         }
       });
@@ -46,44 +51,35 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
-  openMovieDetails(movie: Movie): void {
+  openMovieDetails(movie: Movie) {
     const dialogRef = this.dialog.open(MovieDetailsComponent, {
       width: '800px',
+      maxWidth: '90vw',
       maxHeight: '90vh',
-      data: { movieId: movie.id }
+      data: { movieId: movie.id },
+      disableClose: false
     });
   }
 
-  removeMovieFromCollection(movie: Movie, event: Event): void {
-    event.stopPropagation();
-    
-    if (this.collection && confirm(`Remove "${movie.title}" from this collection?`)) {
-      this.collectionService.removeMovieFromCollection(this.collection.id, movie.id);
-      this.snackBar.open('Movie removed from collection', 'Close', { duration: 3000 });
-    }
+  removeMovieFromCollection(movie: Movie) {
+    this.alerts.confirm(`Are you sure you want to remove "${movie.title}" from this collection?`, 'Remove Movie')
+      .then(confirmed => {
+        if (confirmed && this.collection) {
+          this.collectionService.removeMovieFromCollection(this.collection.id, movie.id)
+            .subscribe({
+              next: () => {
+                this.alerts.success('Movie removed from collection');
+              },
+              error: (error) => {
+                console.error('Error removing movie from collection:', error);
+                this.alerts.error('Failed to remove movie from collection');
+              }
+            });
+        }
+      });
   }
 
-  goBack(): void {
+  goBack() {
     this.router.navigate(['/collections']);
-  }
-
-  getImageUrl(posterPath: string): string {
-    if (posterPath) {
-      return `https://image.tmdb.org/t/p/w500${posterPath}`;
-    }
-    return 'assets/no-poster.jpg';
-  }
-
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/no-poster.jpg';
-  }
-
-  getFormattedDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   }
 } 

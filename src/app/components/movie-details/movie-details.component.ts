@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MovieService } from '../../services/movie.service';
-import { Movie } from '../../models/movie.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ImageService } from '../../services/image.service';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
+import { Movie, MovieDetails } from '../../models/movie.model';
 
 @Component({
   selector: 'app-movie-details',
@@ -10,25 +11,27 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./movie-details.component.scss']
 })
 export class MovieDetailsComponent implements OnInit {
-  movie: Movie | null = null;
+  movie: MovieDetails | null = null;
   loading = true;
   rating = 0;
   sessionId: string | null = null;
   ratingSubmitted = false;
+  ratingStars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { movieId: number },
     private dialogRef: MatDialogRef<MovieDetailsComponent>,
-    private movieService: MovieService,
-    private snackBar: MatSnackBar
+    public movieService: MovieService,
+    public imageService: ImageService,
+    private alerts: AlertsService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadMovieDetails();
     this.getGuestSession();
   }
 
-  private loadMovieDetails(): void {
+  private loadMovieDetails() {
     this.movieService.getMovieDetails(this.data.movieId).subscribe({
       next: (movie) => {
         this.movie = movie;
@@ -36,13 +39,13 @@ export class MovieDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading movie details:', error);
-        this.snackBar.open('Error loading movie details', 'Close', { duration: 3000 });
+        this.alerts.error('Error loading movie details');
         this.loading = false;
       }
     });
   }
 
-  private getGuestSession(): void {
+  private getGuestSession() {
     this.movieService.getGuestSessionId().subscribe({
       next: (response) => {
         this.sessionId = response.guest_session_id;
@@ -53,64 +56,29 @@ export class MovieDetailsComponent implements OnInit {
     });
   }
 
-  onRatingChange(rating: number): void {
+  onRatingChange(rating: number) {
     this.rating = rating;
   }
 
-  submitRating(): void {
+  submitRating() {
     if (!this.sessionId || !this.movie) {
-      this.snackBar.open('Unable to submit rating', 'Close', { duration: 3000 });
+      this.alerts.error('Unable to submit rating');
       return;
     }
 
     this.movieService.rateMovie(this.movie.id, this.rating, this.sessionId).subscribe({
       next: () => {
         this.ratingSubmitted = true;
-        this.snackBar.open('Rating submitted successfully!', 'Close', { duration: 3000 });
+        this.alerts.success('Rating submitted successfully!');
       },
       error: (error) => {
         console.error('Error submitting rating:', error);
-        this.snackBar.open('Error submitting rating', 'Close', { duration: 3000 });
+        this.alerts.error('Error submitting rating');
       }
     });
   }
 
-  formatCurrency(amount: number): string {
-    if (amount === 0) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
-  getImageUrl(posterPath: string): string {
-    return this.movieService.getImageUrl(posterPath);
-  }
-
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/no-poster.jpg';
-  }
-
-  getSpokenLanguages(): string {
-    if (!this.movie?.spoken_languages || this.movie.spoken_languages.length === 0) {
-      return 'N/A';
-    }
-    return this.movie.spoken_languages.map(lang => lang.name).join(', ');
-  }
-
-  close(): void {
+  close() {
     this.dialogRef.close();
   }
 } 

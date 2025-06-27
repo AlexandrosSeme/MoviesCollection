@@ -2,7 +2,7 @@
   <mat-card-header>
     <mat-card-title>{{ collection.title }}</mat-card-title>
     <mat-card-subtitle>
-      Created {{ getFormattedDate(collection.createdDate) }}
+      Created {{ collection.createdDate | dateFormat:'short' }}
     </mat-card-subtitle>
     
     <div class="action-buttons" *ngIf="showActions">
@@ -38,9 +38,9 @@
         *ngFor="let movie of getMoviePreviews()" 
         class="movie-preview">
         <img
-          [src]="movie.poster_path ? 'https://image.tmdb.org/t/p/w92' + movie.poster_path : 'assets/no-poster.jpg'"
+          [src]="imageService.getPosterUrlSync(movie.poster_path, 'w92')"
           [alt]="movie.title" 
-          (error)="onImageError($event)">
+          appImageError>
       </div>
       <div class="more-movies" *ngIf="getMoreMoviesCount() > 0">
         <span>+{{ getMoreMoviesCount() }} more</span>

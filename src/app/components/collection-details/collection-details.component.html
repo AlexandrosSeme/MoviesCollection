@@ -8,7 +8,7 @@
       <h1>{{ collection.title }}</h1>
       <p class="description">{{ collection.description }}</p>
       <div class="collection-meta">
-        <span class="created-date">Created {{ getFormattedDate(collection.createdDate) }}</span>
+        <span class="created-date">Created {{ collection.createdDate | dateFormat:'long' }}</span>
         <span class="movie-count">{{ collection.movies.length }} movies</span>
       </div>
     </div>
@@ -16,50 +16,20 @@
 
   <div class="movies-section" *ngIf="collection">
     <div class="movies-grid" *ngIf="collection.movies.length > 0">
-      <mat-card 
-        *ngFor="let movie of collection.movies" 
-        class="movie-card"
-        (click)="openMovieDetails(movie)">
-        
-        <div class="movie-poster">
-          <img 
-            [src]="getImageUrl(movie.poster_path)" 
-            [alt]="movie.title"
-            (error)="onImageError($event)">
-          
-          <button 
-            mat-icon-button 
-            class="remove-button"
-            (click)="removeMovieFromCollection(movie, $event)"
-            matTooltip="Remove from collection">
-            <mat-icon>remove_circle</mat-icon>
-          </button>
-          
-        </div>
-
-        <mat-card-content>
-          <h3 class="movie-title">{{ movie.title }}</h3>
-          <p class="movie-year" *ngIf="movie.release_date">
-            {{ movie.release_date | date:'yyyy' }}
-          </p>
-          <p class="movie-overview" *ngIf="movie.overview">
-            {{ movie.overview | slice:0:100 }}{{ movie.overview.length > 100 ? '...' : '' }}
-          </p>
-        </mat-card-content>
-      </mat-card>
+      <app-movie-card
+        *ngFor="let movie of moviesAsMovieType"
+        [movie]="movie"
+        [showRemoveButton]="true"
+        [showActions]="false"
+        (removeMovie)="removeMovieFromCollection(movie)"
+        (movieClick)="openMovieDetails(movie)">
+      </app-movie-card>
     </div>
 
     <div class="empty-collection" *ngIf="collection.movies.length === 0">
       <mat-icon>movie_off</mat-icon>
       <h2>No Movies in This Collection</h2>
       <p>Add some movies to get started!</p>
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="goBack()">
-        <mat-icon>search</mat-icon>
-        Search for Movies
-      </button>
     </div>
   </div>
 </div>

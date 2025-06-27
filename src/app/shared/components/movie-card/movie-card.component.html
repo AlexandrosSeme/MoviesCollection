@@ -1,14 +1,18 @@
 <mat-card class="movie-card" [class.compact]="compact" [class.selected]="isSelected" (click)="onMovieClick()">
 
   <div class="movie-poster-container">
-    <img [src]="getImageUrl(movie.poster_path)" [alt]="movie.title" class="movie-poster" (error)="onImageError($event)">
+    <img [src]="imageService.getPosterUrlSync(movie.poster_path)" [alt]="movie.title" class="movie-poster" appImageError>
 
-    <!-- Selection indicator at top right -->
     <div class="selection-indicator" *ngIf="showSelection && isSelected">
       <mat-icon>check_circle</mat-icon>
     </div>
 
-    <!-- Action buttons overlay -->
+    <div class="action-buttons" *ngIf="showRemoveButton && !showSelection">
+      <button mat-icon-button color="warn" (click)="onRemoveMovie($event)" matTooltip="Delete movie">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+
     <div class="movie-overlay" *ngIf="showActions && !showSelection">
       <div class="movie-actions">
         <button mat-icon-button color="primary" class="action-btn" (click)="onAddToCollection($event)"
@@ -18,7 +22,6 @@
       </div>
     </div>
 
-    <!-- Rating circle -->
     <div class="rating-circle" *ngIf="movie.vote_average > 0">
       <span class="rating-number">{{ movie.vote_average.toFixed(1) }}</span>
     </div>

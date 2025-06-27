@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 // Angular Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +12,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatRadioModule } from '@angular/material/radio';
@@ -21,6 +20,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
 
 // Custom Components
 import { SearchPageComponent } from './components/search-page/search-page.component';
@@ -54,13 +54,14 @@ import { CollectionDetailsComponent } from './components/collection-details/coll
     MatInputModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     MatTooltipModule,
     MatToolbarModule,
     MatRadioModule,
     MatGridListModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -16,9 +16,6 @@
             [(ngModel)]="title"
             placeholder="Enter collection title"
             maxlength="50">
-          <mat-error *ngIf="title && title.length < 3">
-            Title must be at least 3 characters
-          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -29,9 +26,6 @@
             placeholder="Describe your collection"
             rows="4"
             maxlength="200"></textarea>
-          <mat-error *ngIf="description && description.length < 10">
-            Description must be at least 10 characters
-          </mat-error>
         </mat-form-field>
       </div>
     </mat-dialog-content>
@@ -46,8 +40,7 @@
       <button 
         mat-raised-button 
         color="primary" 
-        (click)="onSubmit()"
-        [disabled]="!isFormValid()">
+        (click)="onSubmit()">
         {{ isEditing ? 'Update Collection' : 'Create Collection' }}
       </button>
     </mat-dialog-actions>

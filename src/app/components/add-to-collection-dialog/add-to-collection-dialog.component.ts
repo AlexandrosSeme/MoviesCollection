@@ -4,8 +4,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { CollectionService } from '../../services/collection.service';
-import { UiService } from '../../shared/services/ui.service';
-import { Movie, MovieCollection } from '../../models/movie.model';
+import { Movie, MovieCollection, LegacyMovie, convertMovieToLegacy } from '../../models/movie.model';
+import { AlertsService } from '../../shared/components/alerts/alerts.service';
 
 @Component({
   selector: 'app-add-to-collection-dialog',
@@ -16,26 +16,25 @@ export class AddToCollectionDialogComponent implements OnInit, OnDestroy {
   collections: MovieCollection[] = [];
   selectedCollectionId: string | null = null;
   loading = false;
-  
   private destroy$ = new Subject<void>();
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { movies: Movie[] },
     private dialogRef: MatDialogRef<AddToCollectionDialogComponent>,
     private collectionService: CollectionService,
-    private uiService: UiService
+    private alerts: AlertsService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadCollections();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private loadCollections(): void {
+  loadCollections() {
     this.loading = true;
     this.collectionService.collections$
       .pipe(takeUntil(this.destroy$))
@@ -46,36 +45,36 @@ export class AddToCollectionDialogComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading collections:', error);
-          this.uiService.showError('Failed to load collections');
+          this.alerts.error('Failed to load collections');
           this.loading = false;
         }
       });
   }
 
-  onCollectionSelect(collectionId: string): void {
+  onCollectionSelect(collectionId: string) {
     this.selectedCollectionId = collectionId;
   }
 
-  onAddToCollection(): void {
+  onAddToCollection() {
     if (!this.selectedCollectionId) {
-      this.uiService.showWarning('Please select a collection');
+      this.alerts.error('Please select a collection to add the movie(s) to.');
       return;
     }
-
-    this.collectionService.addMoviesToCollection(this.selectedCollectionId, this.data.movies);
-    this.uiService.showSuccess('Movies added to collection successfully!');
-    this.dialogRef.close(true);
+    const movies: LegacyMovie[] = this.data.movies.map(convertMovieToLegacy);
+    this.collectionService.addMoviesToCollection(this.selectedCollectionId, movies)
+      .subscribe({
+        next: () => {
+          this.alerts.success('Movie(s) added to collection!');
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error('Error adding movies to collection:', error);
+          this.alerts.error('Failed to add movies to collection');
+        }
+      });
   }
 
-  onCancel(): void {
+  onCancel() {
     this.dialogRef.close();
-  }
-
-  getMovieTitles(): string {
-    return this.data.movies.map(movie => movie.title).join(', ');
-  }
-
-  getMovieCount(): number {
-    return this.data.movies.length;
   }
 } 
